@@ -15,6 +15,7 @@ import { settingsAreCompleteAndLoggedIn } from "../view/GoogleCalendarSettingTab
 import { allColorNames, getColorNameFromEvent } from "../googleApi/GoogleColors";
 import { GoogleApiError } from "./GoogleApiError";
 import { logError } from "../helper/log";
+import {Notice} from "obsidian";
 
 const cachedEvents = new Map<string, EventCacheValue>();
 
@@ -91,8 +92,7 @@ export async function googleListEvents(
 	}
 
 	//Sort because multi day requests will only sort by date
-	eventList = _.orderBy(eventList, [(event: GoogleEvent) => new Date(event.start.date ?? event.start.dateTime)], "asc")
-
+	eventList = _.orderBy(eventList, [(event: GoogleEvent) => window.moment(event.start.date ?? event.start.dateTime).valueOf()], "asc");
 	return eventList;
 }
 
