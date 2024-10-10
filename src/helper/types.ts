@@ -51,6 +51,10 @@ export interface GoogleCalendarPluginSettings {
     debugMode: boolean;
 
 	viewSettings: { [type in string]: CodeBlockOptions };
+
+	// Insert option settings
+	useLink: boolean;
+	useTime: boolean;
     }
 
 export interface Template {

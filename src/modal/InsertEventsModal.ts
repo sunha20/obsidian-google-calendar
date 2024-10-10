@@ -1,5 +1,5 @@
-import type { GoogleEvent } from "../helper/types";
-import { Editor, Modal } from "obsidian";
+import type {GoogleEvent} from "../helper/types";
+import {Editor, Modal, Notice} from "obsidian";
 import InsertEvents from "../svelte/views/InsertEvents.svelte";
 import GoogleCalendarPlugin from './../GoogleCalendarPlugin';
 import _ from "lodash";
@@ -12,6 +12,7 @@ import _ from "lodash";
 export class InsertEventsModal extends Modal {
 
     editor: Editor;
+    plugin = GoogleCalendarPlugin.getInstance()
 
     constructor(editor: Editor) {
         super(GoogleCalendarPlugin.getInstance().app);
@@ -19,7 +20,7 @@ export class InsertEventsModal extends Modal {
     }
 
     async onOpen(): Promise<void> {
-        const { contentEl } = this;
+        const {contentEl} = this;
         new InsertEvents({
             target: contentEl,
             props: {
@@ -30,20 +31,58 @@ export class InsertEventsModal extends Modal {
     }
 
     onClose(): void {
-        const { contentEl } = this;
+        const {contentEl} = this;
         contentEl.empty();
     }
 
     onSubmit(printType: string, eventList: GoogleEvent[], tableOptions: string[], insertEventsModal: InsertEventsModal): void {
+        const getTitle = (event: GoogleEvent) => {
+            if (insertEventsModal.plugin.settings.useLink) {
+                return `[${event.summary}](${event.htmlLink}&cal=${event.parent.id})`;
+            } else {
+                return `${event.summary}`;
+            }
+        }
 
+        const getTime = (event: GoogleEvent) => {
+            if (insertEventsModal.plugin.settings.useTime) {
+                // all-day event
+                if (event.start.date.length == 10 && event.end.date.length == 10) {
+                    return "";
+                }
+
+                const startMoment = event.start.date ? window.moment(event.start.date) : window.moment(event.start.dateTime);
+                const endMoment = event.start.date ? window.moment(event.end.date) : window.moment(event.end.dateTime);
+                let startContent, endContent;
+
+                // timed event
+                if (startMoment.format("YYYY-MM-DD") == endMoment.format("YYYY-MM-DD")) {
+                    startContent = startMoment.format("HH:mm");
+                    endContent = endMoment.format("HH:mm");
+                    return `${startContent} - ${endContent}`;
+                // multiple day event
+                } else {
+                    return `${startMoment.format("YYYY-MM-DD")} - ${endMoment.format("YYYY-MM-DD")}`;
+                }
+
+
+            } else {
+                return "";
+            }
+        }
+
+        const isAllDay = (event: GoogleEvent) => {
+            const startMoment = event.start.date ? window.moment(event.start.date) : window.moment(event.start.dateTime);
+            const endMoment = event.start.date ? window.moment(event.end.date) : window.moment(event.end.dateTime);
+
+        }
         let headerString = "";
         let headerDividerString = ""
         let eventStringList = "";
 
         if (printType == "bullet") {
             eventList.forEach((event) => {
-                const nameString = `[${event.summary}](${event.htmlLink}&cal=${event.parent.id})`;
-                eventStringList += `\n- ${nameString}`;
+                eventStringList += `\n- ${getTime(event)} ${getTitle(event)}`;
             });
 
             insertEventsModal.editor.replaceRange(
@@ -69,7 +108,7 @@ export class InsertEventsModal extends Modal {
 
                     //Using summary as link for {{gEvent}} syntax starter
                     if (objectPath == ".summary") {
-                        content = `[${content}](${event.htmlLink}&cal=${event.parent.id})`;
+                        content = getTitle(event);
                     }
                     if (objectPath.startsWith(".start") && !objectPath.contains("timeZone")) {
                         const startMoment = event.start.date ? window.moment(event.start.date) : window.moment(event.start.dateTime)
@@ -79,9 +118,6 @@ export class InsertEventsModal extends Modal {
                         const endMoment = event.start.date ? window.moment(event.end.date) : window.moment(event.end.dateTime)
                         content = endMoment.format("YYYY-MM-DD HH:mm");
                     }
-
-
-
 
 
                     eventStringList += `| ${content} `
@@ -111,6 +147,16 @@ export class InsertEventsModal extends Modal {
             });
             insertEventsModal.editor.replaceRange(
                 headerString + headerDividerString + eventStringList,
+                insertEventsModal.editor.getCursor()
+            );
+
+        } else if (printType == "checkbox") {
+            eventList.forEach((event) => {
+                eventStringList += `\n- [ ] ${getTime(event)} ${getTitle(event)}`;
+            });
+
+            insertEventsModal.editor.replaceRange(
+                eventStringList,
                 insertEventsModal.editor.getCursor()
             );
         }

@@ -529,6 +529,28 @@ export class GoogleCalendarSettingTab extends PluginSettingTab {
 					});
 			});
 		}
+
+		new Setting(containerEl)
+			.setName("Insert with link")
+			.setDesc("When inserting an event, insert it with a link.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.useLink);
+				toggle.onChange(async (state) => {
+					this.plugin.settings.useLink = state;
+					await this.plugin.saveSettings();
+				});
+			})
+
+		new Setting(containerEl)
+			.setName("Insert with time")
+			.setDesc("When inserting an event as bullet or checkbox, insert it with start and end time.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.useTime);
+				toggle.onChange(async (state) => {
+					this.plugin.settings.useTime = state;
+					await this.plugin.saveSettings();
+				});
+			})
 	}
 }
 

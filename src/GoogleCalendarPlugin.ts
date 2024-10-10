@@ -117,7 +117,9 @@ const DEFAULT_SETTINGS: GoogleCalendarPluginSettings = {
 			view: "day",	
 			offset: 0,		
 		}
-	}
+	},
+	useLink: true,
+	useTime: false
 };
 
 export default class GoogleCalendarPlugin extends Plugin {

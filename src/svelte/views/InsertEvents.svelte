@@ -154,6 +154,8 @@
             <select bind:value={insertType} class="dropdown">
                 <option selected={true} value="bullet">Bullet</option>
                 <option value="table">Table</option>
+                <option value="checkbox">Checkbox</option>
+
             </select>
         </div>
         <div class="input">
