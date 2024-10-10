@@ -47,22 +47,23 @@ export class InsertEventsModal extends Modal {
         const getTime = (event: GoogleEvent) => {
             if (insertEventsModal.plugin.settings.useTime) {
                 // all-day event
-                if (event.start.date.length == 10 && event.end.date.length == 10) {
+                if (event.start?.date && event.end?.date && event.start.date.length === 10 && event.end.date.length === 10) {
                     return "";
                 }
 
                 const startMoment = event.start.date ? window.moment(event.start.date) : window.moment(event.start.dateTime);
                 const endMoment = event.start.date ? window.moment(event.end.date) : window.moment(event.end.dateTime);
-                let startContent, endContent;
+                let startContent;
+                let endContent;
 
                 // timed event
                 if (startMoment.format("YYYY-MM-DD") == endMoment.format("YYYY-MM-DD")) {
                     startContent = startMoment.format("HH:mm");
                     endContent = endMoment.format("HH:mm");
-                    return `${startContent} - ${endContent}`;
+                    return `${startContent} - ${endContent} `;
                 // multiple day event
                 } else {
-                    return `${startMoment.format("YYYY-MM-DD")} - ${endMoment.format("YYYY-MM-DD")}`;
+                    return `${startMoment.format("YYYY-MM-DD")} - ${endMoment.format("YYYY-MM-DD") }`;
                 }
 
 
@@ -71,18 +72,13 @@ export class InsertEventsModal extends Modal {
             }
         }
 
-        const isAllDay = (event: GoogleEvent) => {
-            const startMoment = event.start.date ? window.moment(event.start.date) : window.moment(event.start.dateTime);
-            const endMoment = event.start.date ? window.moment(event.end.date) : window.moment(event.end.dateTime);
-
-        }
         let headerString = "";
         let headerDividerString = ""
         let eventStringList = "";
 
         if (printType == "bullet") {
             eventList.forEach((event) => {
-                eventStringList += `\n- ${getTime(event)} ${getTitle(event)}`;
+                eventStringList += `\n- ${getTime(event)}${getTitle(event)}`;
             });
 
             insertEventsModal.editor.replaceRange(
